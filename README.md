@@ -1,5 +1,75 @@
 # Spot Micro Quadruped Project
 
+> **This is a ROS Noetic / Ubuntu 20.04 port** of [mike4192/spotMicro](https://github.com/mike4192/spotMicro) (MIT).
+> Upstream targets ROS Kinetic on Ubuntu 16.04, which is end-of-life and no longer installable.
+> Everything below the [Overview](#overview) heading is the original README, unchanged.
+
+## ROS Noetic Port
+
+### Changes
+
+| Area | Problem | Fix |
+|---|---|---|
+| Submodule | `ros-i2cpwmboard` pointed at `gitlab.com/bradanlane/ros-i2cpwmboard`, which no longer exists | Repointed to [a fork of a surviving mirror](https://github.com/studyingrobot/ros-i2cpwmboard), pinned to the same commit (`c73f89a`) |
+| Build | libi2c 4.x moved the `i2c_smbus_*` functions out of `<linux/i2c-dev.h>` into `libi2c` | Added `#include <i2c/smbus.h>`, wrapped in `extern "C"` because that header carries no C linkage guard, and linked `i2c` |
+| Launch | `xacro.py` was removed after Kinetic | `$(find xacro)/xacro` in the three `spot_micro_rviz` launch files |
+| Launch | The `state_publisher` executable was removed after Kinetic | `type="robot_state_publisher"` |
+| Python | Scripts used `#!/usr/bin/python`, absent on Ubuntu 20.04 | `#!/usr/bin/env python3` |
+| Python | `raw_input()`, `dict.iteritems()`, `print` statement, `except X, e:` | Python 3 equivalents |
+
+`ros-i2cpwmboard` is GPLv3 and is deliberately kept as a separate submodule rather than vendored into this MIT-licensed repository.
+
+### Tested
+
+- Host: Ubuntu 24.04, x86_64; ROS Noetic inside an `osrf/ros:noetic-desktop-full` container
+- `catkin build` completes for all 9 packages
+- `spot_micro_motion_cmd` (standalone + debug mode) and `spot_micro_keyboard_command` run together, with the RViz model responding to `stand`, `angle_cmd` and `walk`
+- **Not yet verified on hardware** (Raspberry Pi + PCA9685 + servos)
+
+### Building on a development PC
+
+```bash
+mkdir -p ~/spot_ws/src
+git clone --recursive https://github.com/studyingrobot/Spotmicro.git ~/spot_ws/src
+
+xhost +local:docker
+docker run -it --name spotmicro \
+  --net=host \
+  -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v $HOME/spot_ws:/root/catkin_ws \
+  --device /dev/dri \
+  osrf/ros:noetic-desktop-full bash
+```
+
+Then inside the container:
+
+```bash
+apt update && apt install -y python3-catkin-tools libi2c-dev \
+  ros-noetic-joy ros-noetic-rplidar-ros ros-noetic-hector-slam
+source /opt/ros/noetic/setup.bash
+cd /root/catkin_ws
+catkin init
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
+catkin build
+source devel/setup.bash
+```
+
+### Running without hardware
+
+Two terminals inside the container:
+
+```bash
+roslaunch spot_micro_motion_cmd motion_cmd.launch run_standalone:=true debug_mode:=true
+```
+
+```bash
+roslaunch spot_micro_keyboard_command keyboard_command.launch run_rviz:=true
+```
+
+Type `stand` at the keyboard node's prompt to raise the model in RViz, then `angle_cmd` or `walk`.
+Return to `idle` before `quit` — on real hardware, quitting from `stand` leaves the servos holding their last commanded position.
+
 ![Spot Micro Walking](assets/spot_micro_walking.gif)
 ![RVIZ](assets/rviz_animation.gif)
 ![slam](assets/spot_micro_slam.gif)
