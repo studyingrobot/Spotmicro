@@ -1,8 +1,10 @@
 # Spot Micro Quadruped Project
 
-> **This is a ROS Noetic / Ubuntu 20.04 port** of [mike4192/spotMicro](https://github.com/mike4192/spotMicro) (MIT).
-> Upstream targets ROS Kinetic on Ubuntu 16.04, which is end-of-life and no longer installable.
-> Everything below the [Overview](#overview) heading is the original README, unchanged.
+> **이 저장소는 [mike4192/spotMicro](https://github.com/mike4192/spotMicro)(MIT)를 ROS Noetic / Ubuntu 20.04로 포팅한 버전입니다.**
+> 원본은 Ubuntu 16.04의 ROS Kinetic 기준으로 작성되었으며, 해당 환경은 지원이 종료되어 현재는 설치할 수 없습니다.
+> 아래 [Overview](#overview) 항목부터는 원본 README 원문 그대로입니다.
+>
+> *This is a ROS Noetic / Ubuntu 20.04 port of [mike4192/spotMicro](https://github.com/mike4192/spotMicro) (MIT). Everything below the Overview heading is the original README, unchanged.*
 
 ## ROS Noetic Port
 
